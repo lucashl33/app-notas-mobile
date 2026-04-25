@@ -471,7 +471,7 @@
         let recognition;
         let isListening = false;
         let notes = [];
-        let lastResultIndex = -1;
+        let processedFinalResults = new Set();
 
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -496,14 +496,15 @@
                 let interimTranscript = '';
                 const textarea = document.getElementById('transcript');
 
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
+                for (let i = 0; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript.trim();
+
                     if (event.results[i].isFinal) {
-                        if (i > lastResultIndex) {
+                        if (!processedFinalResults.has(i) && transcript) {
                             textarea.value += transcript + ' ';
-                            lastResultIndex = i;
+                            processedFinalResults.add(i);
                         }
-                    } else {
+                    } else if (i === event.results.length - 1) {
                         interimTranscript += transcript;
                     }
                 }
@@ -559,7 +560,7 @@
             } else {
                 document.getElementById('transcript').value = '';
                 document.getElementById('permissionBox').style.display = 'none';
-                lastResultIndex = -1;
+                processedFinalResults = new Set();
                 recognition.start();
             }
         }
