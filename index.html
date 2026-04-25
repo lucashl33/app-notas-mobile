@@ -471,7 +471,7 @@
         let recognition;
         let isListening = false;
         let notes = [];
-        let processedFinalResults = new Set();
+        let finalTranscript = '';
 
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -494,20 +494,20 @@
 
             recognition.onresult = (event) => {
                 let interimTranscript = '';
-                const textarea = document.getElementById('transcript');
+                let builtFinalTranscript = '';
 
                 for (let i = 0; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript.trim();
+                    const transcript = event.results[i][0].transcript;
 
                     if (event.results[i].isFinal) {
-                        if (!processedFinalResults.has(i) && transcript) {
-                            textarea.value += transcript + ' ';
-                            processedFinalResults.add(i);
-                        }
-                    } else if (i === event.results.length - 1) {
+                        builtFinalTranscript += transcript + ' ';
+                    } else {
                         interimTranscript += transcript;
                     }
                 }
+
+                finalTranscript = builtFinalTranscript.trim();
+                document.getElementById('transcript').value = finalTranscript;
 
                 if (interimTranscript) {
                     showStatus(`Ouvindo: "${interimTranscript.substring(0, 30)}"`, 'info');
@@ -558,9 +558,9 @@
             if (isListening) {
                 recognition.stop();
             } else {
+                finalTranscript = '';
                 document.getElementById('transcript').value = '';
                 document.getElementById('permissionBox').style.display = 'none';
-                processedFinalResults = new Set();
                 recognition.start();
             }
         }
@@ -583,11 +583,12 @@
 
             notes.unshift(note);
             localStorage.setItem('notasReuniao', JSON.stringify(notes));
-            
+
+            finalTranscript = '';
             document.getElementById('transcript').value = '';
             document.getElementById('noteTitle').value = '';
             showStatus('✅ Nota salva!', 'success');
-            
+
             renderNotes();
         }
 
