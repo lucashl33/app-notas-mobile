@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="App de Notas de Reunião por Voz">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Notas Reunião">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%232563eb' width='192' height='192'/><text x='50%' y='50%' font-size='120' dy='.3em' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>🎤</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%232563eb' width='192' height='192' rx='45'/><text x='50%' y='50%' font-size='120' dy='.3em' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>🎤</text></svg>">
+    <link rel="manifest" href="data:application/json,{%22name%22:%22Notas%20de%20Reuni%C3%A3o%22,%22short_name%22:%22Notas%22,%22description%22:%22App%20de%20notas%20por%20voz%22,%22start_url%22:%22./index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22%23ffffff%22,%22theme_color%22:%22%232563eb%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20192%20192%27%3E%3Crect%20fill=%27%232563eb%27%20width=%27192%27%20height=%27192%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27120%27%20dy=%27.3em%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27system-ui%27%3E🎤%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22}]}">
+    <title>🎤 Notas de Reunião - App por Voz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --success-dark: #15803d;
+            --danger: #dc2626;
+            --danger-dark: #b91c1c;
+            --light: #f0f9ff;
+            --light-border: #bfdbfe;
+            --text-dark: #1e3a8a;
+            --text-light: #64748b;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #ffffff 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--light-border);
+            padding: max(1rem, env(safe-area-inset-top)) 1rem 1rem 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem;
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+
+        header h1 {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.3rem;
+        }
+
+        .recorder-section {
+            background: white;
+            border-radius: 1rem;
+            border: 2px solid var(--light-border);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--light-border);
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--light);
+            color: var(--text-dark);
+            transition: all 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 140px;
+            max-height: 240px;
+            font-size: 1rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        button {
+            padding: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 120px;
+            -webkit-appearance: none;
+            appearance: none;
+            min-height: 48px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active:not(:disabled) {
+            background: var(--primary-dark);
+            transform: scale(0.98);
+        }
+
+        .btn-primary.recording {
+            background: var(--danger);
+            animation: pulse 1s infinite;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:active:not(:disabled) {
+            background: var(--success-dark);
+            transform: scale(0.98);
+        }
+
+        .btn-success:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: var(--text-dark);
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            min-height: auto;
+        }
+
+        .btn-secondary:active {
+            background: #d1d5db;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: var(--danger);
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            min-height: auto;
+        }
+
+        .btn-danger:active {
+            background: #fecaca;
+        }
+
+        .btn-purple {
+            background: #f3e8ff;
+            color: #7e22ce;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            min-height: auto;
+        }
+
+        .btn-purple:active {
+            background: #ede9fe;
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+            border: 2px solid;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #93c5fd;
+        }
+
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .notes-list {
+            margin-top: 2rem;
+        }
+
+        .notes-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+        }
+
+        .note-card {
+            background: white;
+            border: 2px solid var(--light-border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+
+        .note-card:active {
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .note-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+
+        .note-time {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 0.75rem;
+        }
+
+        .note-content {
+            color: var(--text-dark);
+            line-height: 1.6;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 0.75rem;
+            background: var(--light);
+            border-radius: 0.5rem;
+            word-break: break-word;
+        }
+
+        .note-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-light);
+            background: white;
+            border: 2px dashed var(--light-border);
+            border-radius: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+            color: var(--text-dark);
+        }
+
+        .recording-indicator {
+            color: var(--danger);
+            font-weight: 700;
+            margin-top: 0.5rem;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.5; }
+        }
+
+        .permission-box {
+            background: #fef3c7;
+            border: 2px solid #fcd34d;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #92400e;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .permission-box strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .permission-box p {
+            margin: 0.25rem 0;
+        }
+
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(0px, env(safe-area-inset-left));
+                padding-right: max(0px, env(safe-area-inset-right));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🎤 Notas</h1>
+            <p>Reunião por voz</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="recorder-section">
+            <div id="status" class="status" style="display: none;"></div>
+
+            <div class="form-group">
+                <label>Título</label>
+                <input type="text" id="noteTitle" placeholder="Ex: Reunião Q2">
+            </div>
+
+            <div class="form-group">
+                <label>Transcrição</label>
+                <textarea id="transcript" placeholder="Fale aqui..." readonly></textarea>
+                <div id="recordingIndicator" class="recording-indicator" style="display: none;">🔴 Gravando...</div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="toggleBtn" onclick="toggleListening()">
+                    🎤 Iniciar
+                </button>
+                <button class="btn-success" id="saveBtn" onclick="saveNote()" disabled>
+                    💾 Salvar
+                </button>
+            </div>
+
+            <div id="permissionBox" class="permission-box" style="display: none;">
+                <strong>🔐 Permitir Microfone</strong>
+                <p>1️⃣ Toque no ⓘ ou 🔒 da barra</p>
+                <p>2️⃣ Permita o Microfone</p>
+                <p>3️⃣ Recarregue (⟳)</p>
+            </div>
+        </div>
+
+        <div class="notes-list">
+            <h2 class="notes-title">📝 Suas Notas (<span id="noteCount">0</span>)</h2>
+            <div id="notesList"></div>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(`
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => self.clients.claim());
+            `)).catch(() => {});
+        }
+
+        let recognition;
+        let isListening = false;
+        let notes = [];
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                showStatus('❌ Navegador não suporta voz', 'error');
+                return false;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'pt-BR';
+
+            recognition.onstart = () => {
+                showStatus('🎤 Ouvindo...', 'info');
+                isListening = true;
+                updateUI();
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        document.getElementById('transcript').value += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                if (interimTranscript) {
+                    showStatus(`Ouvindo: "${interimTranscript.substring(0, 30)}"`, 'info');
+                }
+            };
+
+            recognition.onerror = (event) => {
+                isListening = false;
+                updateUI();
+                
+                let errorMsg = '';
+                let showPermission = false;
+                switch (event.error) {
+                    case 'not-allowed':
+                    case 'permission-denied':
+                        errorMsg = '🚫 Permissão negada';
+                        showPermission = true;
+                        break;
+                    case 'no-speech':
+                        errorMsg = '⚠️ Nenhuma voz detectada';
+                        break;
+                    case 'network':
+                        errorMsg = '❌ Sem conexão';
+                        break;
+                    default:
+                        errorMsg = `Erro: ${event.error}`;
+                }
+                showStatus(errorMsg, 'error');
+                if (showPermission) {
+                    document.getElementById('permissionBox').style.display = 'block';
+                }
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                updateUI();
+            };
+
+            return true;
+        }
+
+        function toggleListening() {
+            if (!recognition) {
+                if (!initSpeechRecognition()) return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                document.getElementById('transcript').value = '';
+                document.getElementById('permissionBox').style.display = 'none';
+                recognition.start();
+            }
+        }
+
+        function saveNote() {
+            const content = document.getElementById('transcript').value.trim();
+            const title = document.getElementById('noteTitle').value.trim();
+
+            if (!content) {
+                showStatus('⚠️ Digite algo!', 'error');
+                return;
+            }
+
+            const note = {
+                id: Date.now(),
+                title: title || `Reunião - ${new Date().toLocaleDateString('pt-BR')}`,
+                content: content,
+                timestamp: new Date().toLocaleString('pt-BR')
+            };
+
+            notes.unshift(note);
+            localStorage.setItem('notasReuniao', JSON.stringify(notes));
+            
+            document.getElementById('transcript').value = '';
+            document.getElementById('noteTitle').value = '';
+            showStatus('✅ Nota salva!', 'success');
+            
+            renderNotes();
+        }
+
+        function deleteNote(id) {
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('notasReuniao', JSON.stringify(notes));
+            renderNotes();
+        }
+
+        function shareWhatsApp(note) {
+            const message = `📝 *${note.title}*\n\n${note.content}\n\n_${note.timestamp}_`;
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus('✅ Copiado!', 'success');
+                setTimeout(() => document.getElementById('status').style.display = 'none', 2000);
+            });
+        }
+
+        function playAudio(text) {
+            speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'pt-BR';
+            utterance.rate = 0.9;
+            speechSynthesis.speak(utterance);
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => statusEl.style.display = 'none', 2000);
+            }
+        }
+
+        function updateUI() {
+            const btn = document.getElementById('toggleBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const indicator = document.getElementById('recordingIndicator');
+            
+            if (isListening) {
+                btn.textContent = '⏹️ Parar';
+                btn.classList.add('recording');
+                indicator.style.display = 'block';
+            } else {
+                btn.textContent = '🎤 Iniciar';
+                btn.classList.remove('recording');
+                indicator.style.display = 'none';
+            }
+
+            saveBtn.disabled = !document.getElementById('transcript').value.trim();
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notesList');
+            document.getElementById('noteCount').textContent = notes.length;
+            
+            if (notes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 2.5rem;">🎤</div>
+                        <h3>Nenhuma nota</h3>
+                        <p>Comece a gravar!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notes.map(note => `
+                <div class="note-card">
+                    <div class="note-title">${escapeHtml(note.title)}</div>
+                    <div class="note-time">⏰ ${note.timestamp}</div>
+                    <div class="note-content">${escapeHtml(note.content).replace(/\n/g, '<br>')}</div>
+                    <div class="note-actions">
+                        <button class="btn-purple" onclick="playAudio('${escapeJs(note.content)}')">🔊 Ouvir</button>
+                        <button class="btn-secondary" onclick="copyToClipboard('${escapeJs(note.content)}')">📋 Copiar</button>
+                        <button class="btn-success" onclick="shareWhatsApp(${JSON.stringify(note).replace(/"/g, '&quot;')})">💬 WhatsApp</button>
+                        <button class="btn-danger" onclick="deleteNote(${note.id})">🗑️ Deletar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function escapeJs(text) {
+            return text.replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/"/g, '\\"');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('notasReuniao');
+            if (saved) {
+                notes = JSON.parse(saved);
+            }
+            renderNotes();
+            initSpeechRecognition();
+
+            document.getElementById('transcript').addEventListener('input', updateUI);
+        });
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA pronto para instalar');
+        });
+    </script>
+</body>
+</html>
